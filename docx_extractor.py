@@ -2,8 +2,15 @@ from docx import Document
 from openpyxl import load_workbook
 import numpy as np
 from pprint import pprint
+import os
 
-wb = load_workbook('workbook.xlsx')
+file_list = []
+for file in os.listdir("C:\Word_extractor\word_files"):
+    if file.endswith(".docx"):
+        list.append(file_list, file)
+
+wb = load_workbook('expenses.xlsx')
+ws = wb['Form1']
 #document_name = ('Document2.docx')
 #document = Document(document_name)
 #tables = document.tables
@@ -16,7 +23,7 @@ def hasNumbers(inputString):
     return any(char.isdigit() for char in inputString)
 
 def extract_document(document_name):
-    document = Document(document_name)
+    document = Document("C:\Word_extractor\word_files\%s" %document_name)
     tables = document.tables
     cost_dict['%s' %document_name] = {}
     for table in tables:
@@ -68,5 +75,30 @@ def extract_document(document_name):
                                 cost_dict['%s' %document_name]['최종금액(VAT 별도)'] = cells[i+add].text
                                 break
 
-extract_document('Document2.docx')
-print(cost_dict)
+#extract_document('Document2.docx')
+print(file_list)
+
+for file in file_list:
+    extract_document(file)
+
+pprint(cost_dict)
+
+xl_label = {'A': '품명',
+            'B': '단가',
+            'C' : '수량',
+            'D': '단위',
+            'E':'금액',
+            'F':'최종금액'}
+
+def export_to_xl():
+    count = 1
+    for thing in cost_dict:
+        count += 1
+        for val in xl_label.values():
+            column = list(xl_label.keys())[list(xl_label.values()).index(val)]
+            ws.cell('%s1' %column).value = xl_label[column]
+            ws.cell('%s%s' %(column, count)).value = cost_dict[thing][xl_label[column]]
+
+    wb.save("expenses.xlsx")
+
+export_to_xl()
